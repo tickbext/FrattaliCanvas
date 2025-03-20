@@ -42,15 +42,16 @@
 
         function createSierpinskiTetrahedron(scene, p1, p2, p3, p4, depth) {
             if (depth === 0) {
-                const geometry = new THREE.TetrahedronGeometry(0.3); // Increased size for better visibility
-                const material = new THREE.MeshPhongMaterial({ 
-                    color: Math.random() * 0xffffff, // Random color for each tetrahedron
-                    shininess: 100, 
-                    flatShading: true
+                // Tetrahedron Geometry with wireframe for the hollow effect
+                const geometry = new THREE.TetrahedronGeometry(0.5);
+                const material = new THREE.LineBasicMaterial({
+                    color: new THREE.Color(Math.random(), Math.random(), Math.random()), // Vibrant random colors
+                    linewidth: 2
                 });
-                const tetrahedron = new THREE.Mesh(geometry, material);
-                tetrahedron.position.set(p1[0], p1[1], p1[2]);
-                scene.add(tetrahedron);
+
+                const wireframe = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), material);
+                wireframe.position.set(p1[0], p1[1], p1[2]);
+                scene.add(wireframe);
             } else {
                 let mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
                 createSierpinskiTetrahedron(scene, p1, mid(p1, p2), mid(p1, p3), mid(p1, p4), depth - 1);
@@ -66,25 +67,29 @@
         renderer.setSize(500, 500);
         document.getElementById("fractal3d").appendChild(renderer.domElement);
 
-        // Lighting setup
+        // Lighting setup with different colors to enhance vibrancy
         const light1 = new THREE.PointLight(0xffffff, 1, 100);
         light1.position.set(10, 10, 10);
         scene.add(light1);
 
-        const light2 = new THREE.PointLight(0x00ff00, 0.5, 100);
+        const light2 = new THREE.PointLight(0x00ff00, 0.5, 100);  // Green Light
         light2.position.set(-10, -10, 10);
         scene.add(light2);
 
-        const light3 = new THREE.AmbientLight(0x404040);  // Soft ambient light
+        const light3 = new THREE.PointLight(0xff00ff, 0.5, 100);  // Purple Light
+        light3.position.set(10, -10, -10);
         scene.add(light3);
 
-        // Create the Sierpinski Tetrahedron fractal
+        const light4 = new THREE.AmbientLight(0x404040);  // Soft ambient light
+        scene.add(light4);
+
+        // Create the Sierpinski Tetrahedron fractal with higher depth
         createSierpinskiTetrahedron(scene, 
             [0, 0, 0], 
             [1, 0, 0], 
             [0.5, Math.sqrt(3) / 2, 0], 
             [0.5, Math.sqrt(3) / 6, Math.sqrt(6) / 3], 
-            4);  // Increase depth for more detail
+            4); // Increase depth for more detail
 
         camera.position.z = 3;
 
