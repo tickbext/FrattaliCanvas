@@ -43,7 +43,7 @@
         function createSierpinskiTetrahedron(scene, p1, p2, p3, p4, depth) {
             if (depth === 0) {
                 const geometry = new THREE.TetrahedronGeometry(0.5);
-                const material = new THREE.MeshStandardMaterial({ color: 0x00ffcc, wireframe: true });
+                const material = new THREE.MeshLambertMaterial({ color: 0x00ffcc });
                 const tetrahedron = new THREE.Mesh(geometry, material);
                 tetrahedron.position.set(p1[0], p1[1], p1[2]);
                 scene.add(tetrahedron);
@@ -62,15 +62,27 @@
         renderer.setSize(500, 500);
         document.getElementById("fractal3d").appendChild(renderer.domElement);
 
-        const light = new THREE.PointLight(0xffffff, 1, 100);
-        light.position.set(10, 10, 10);
-        scene.add(light);
+        // Lighting
+        const light1 = new THREE.PointLight(0xffffff, 1, 100);
+        light1.position.set(10, 10, 10);
+        scene.add(light1);
 
+        const light2 = new THREE.PointLight(0xffffff, 0.5, 100);
+        light2.position.set(-10, -10, 10);
+        scene.add(light2);
+
+        const light3 = new THREE.AmbientLight(0x404040);  // Ambient light for soft lighting
+        scene.add(light3);
+
+        // Create the fractal
         createSierpinskiTetrahedron(scene, [0, 0, 0], [1, 0, 0], [0.5, Math.sqrt(3) / 2, 0], [0.5, Math.sqrt(3) / 6, Math.sqrt(6) / 3], 3);
-        camera.position.z = 2;
+        camera.position.z = 3;
 
+        // Animation: Rotate the fractal
         function animate() {
             requestAnimationFrame(animate);
+            scene.rotation.x += 0.01;
+            scene.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
         animate();
