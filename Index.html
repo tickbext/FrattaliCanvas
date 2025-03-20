@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierpinski Fractal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { background-color: black; color: white; text-align: center; }
+        canvas { display: block; margin: auto; }
+        #fractal2d, #fractal3d { margin: 20px auto; }
+    </style>
+</head>
+<body>
+    <h1>Sierpinski Fractal</h1>
+    <h2>2D Triangle</h2>
+    <canvas id="fractal2d" width="500" height="500"></canvas>
+    <h2>3D Tetrahedron</h2>
+    <div id="fractal3d"></div>
+
+    <script>
+        function drawSierpinski(ctx, x, y, size, depth) {
+            if (depth === 0) {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + size, y);
+                ctx.lineTo(x + size / 2, y - (size * Math.sqrt(3) / 2));
+                ctx.closePath();
+                ctx.fillStyle = `hsl(${depth * 60}, 100%, 50%)`;
+                ctx.fill();
+            } else {
+                let newSize = size / 2;
+                drawSierpinski(ctx, x, y, newSize, depth - 1);
+                drawSierpinski(ctx, x + newSize, y, newSize, depth - 1);
+                drawSierpinski(ctx, x + newSize / 2, y - (newSize * Math.sqrt(3) / 2), newSize, depth - 1);
+            }
+        }
+
+        const canvas = document.getElementById("fractal2d");
+        const ctx = canvas.getContext("2d");
+        drawSierpinski(ctx, 50, 450, 400, 6);
+
+        function createSierpinskiTetrahedron(scene, p1, p2, p3, p4, depth) {
+            if (depth === 0) {
+                const geometry = new THREE.TetrahedronGeometry(0.5);
+                const material = new THREE.MeshStandardMaterial({ color: 0x00ffcc, wireframe: true });
+                const tetrahedron = new THREE.Mesh(geometry, material);
+                tetrahedron.position.set(p1[0], p1[1], p1[2]);
+                scene.add(tetrahedron);
+            } else {
+                let mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+                createSierpinskiTetrahedron(scene, p1, mid(p1, p2), mid(p1, p3), mid(p1, p4), depth - 1);
+                createSierpinskiTetrahedron(scene, p2, mid(p1, p2), mid(p2, p3), mid(p2, p4), depth - 1);
+                createSierpinskiTetrahedron(scene, p3, mid(p1, p3), mid(p2, p3), mid(p3, p4), depth - 1);
+                createSierpinskiTetrahedron(scene, p4, mid(p1, p4), mid(p2, p4), mid(p3, p4), depth - 1);
+            }
+        }
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, 500 / 500, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(500, 500);
+        document.getElementById("fractal3d").appendChild(renderer.domElement);
+
+        const light = new THREE.PointLight(0xffffff, 1, 100);
+        light.position.set(10, 10, 10);
+        scene.add(light);
+
+        createSierpinskiTetrahedron(scene, [0, 0, 0], [1, 0, 0], [0.5, Math.sqrt(3) / 2, 0], [0.5, Math.sqrt(3) / 6, Math.sqrt(6) / 3], 3);
+        camera.position.z = 2;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
